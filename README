@@ -1,0 +1,13 @@
+[에이블리-BACKEND 기능과제]
+
+
+
+📦controllers
+ ┣ 📂forgotPassword
+ ┃ ┗ 📜settingPassword.js => 비밀번호 재설정
+ ┣ 📂login
+ ┃ ┗ 📜login.js => 로그인기능
+ ┣ 📂mypage
+ ┃ ┗ 📜index.js => 로그인 한 회원 정보 조회
+ ┗ 📂signup
+ ┃ ┗ 📜signUp.js => 회원가입 기능
