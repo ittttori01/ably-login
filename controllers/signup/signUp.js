@@ -1,4 +1,4 @@
-const _jwt = require('jsonwebtoken');
+
 const config = require('../../config.json');
 const db = require('../../db');
 
@@ -48,6 +48,8 @@ exports.sendDigitCode = (req,res) => {
 
     
     const makeToken = (userInfo) => {
+        
+        const _jwt = require('jsonwebtoken');
 
         const promiseFunc = (resolve,reject) => {
 
@@ -294,9 +296,6 @@ exports.checkEmail = (req,res) => {
 //등록페이지
 exports.signUp = (req,res) => {
 
-    const _uuid = require('uuid');
-    const _crypto = require('crypto');
-
     const info = () => {
 
         const promiseFunc = (resolve,reject) => {
@@ -320,6 +319,8 @@ exports.signUp = (req,res) => {
 
     const createUuid = (userInfo) => {
 
+        const _uuid = require('uuid');
+
         const promiseFunc = (resolve,reject) => {
 
             userInfo.uuid = _uuid.v4();
@@ -331,6 +332,8 @@ exports.signUp = (req,res) => {
     };
 
     const createPassword = (userInfo) => {
+
+        const _crypto = require('crypto');
 
         let password = userInfo.password;
 
@@ -359,6 +362,7 @@ exports.signUp = (req,res) => {
     const addUser = (userInfo) => {
 
         const shortId = require('shortid');
+        const _dateformat = require('dateformat');
 
         const promiseFunc = (resolve,reject) => {
 
@@ -371,7 +375,9 @@ exports.signUp = (req,res) => {
                     salt : userInfo.salt,
                     uuid : userInfo.uuid,
                     name : userInfo.name,
-                    phone_number : userInfo.phone_number
+                    phone_number : userInfo.phone_number,
+                    createdAt : _dateformat(new Date(), 'yyyy-mm-dd')
+    
             }).write();
             
             resolve();

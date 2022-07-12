@@ -1,7 +1,24 @@
 [에이블리-BACKEND 기능과제]
 
+** 실행방법 ** 
+폴더 다운로드 후 npm install 명령어로 모듈 설치 후 server.js파일 실행.
 
+** 회원가입 db 데이터 예시 **
+  "member": [
+    {
+      "id": "7KImw0L3H",
+      "email": "eeee@gmail.com",
+      "nickname": "tori",
+      "password": "8KawTBMVKE43yiH+tSbqKcQoK34Gz7lgLqwt3PfE7WgcrzH4BogX9CVQHgIs9RksO5HwnfEOJzTWkBYcK8O4MQ==",
+      "salt": "BPQxaS8JJSxkcxSg/HKsFBU64kifsz8kYBYDPVIJBHypOErszm8Uz2mQZ/GSo9eTrJcKHY47V0D2hQm73cvd5A==",
+      "uuid": "ae3e9c44-ba91-4c25-bd71-8a27f5df96cb",
+      "name": "kim",
+      "phone_number": "0101010234",
+      "createdAt" : "2022-01-01"
+    }
+  ]
 
+* 컨트롤러
 📦controllers
  ┣ 📂forgotPassword
  ┃ ┗ 📜settingPassword.js => 비밀번호 재설정
@@ -11,3 +28,93 @@
  ┃ ┗ 📜index.js => 로그인 한 회원 정보 조회
  ┗ 📂signup
  ┃ ┗ 📜signUp.js => 회원가입 기능
+
+*  ROUTE 명세
+    1. 회원가입 시 휴대폰 번호 인증을 위한 인증번호 전송
+    
+    주소 : POST http://localhost:8888/signup/send/code
+
+    
+    데이터 예시 : body(raw-json) {
+
+                        "phone_number" : "1234567",
+                        "is_test" : true (test가아닐경우 false)
+                    }
+
+    프로세스 1.전화번호 입력 
+           2. 회원가입이 되어있는 번호인지확인 (가입이력 있을 시 프론트로 400코드,메세지 전송)
+           3. front사이드로 보낼 jwt 토큰설정(설정된 인증번호, 입력받은 전화번호) => 테스트의경우 인증코드는 1234
+           4. 테스트용이 아닐경우 sms api 
+           5. sms api 전송 후 / 테스트의 경우 3번과정이 끝난 후 front사이드로 토큰값전송
+           (프론트 사이드에서는 인증번호 입력시간 3분을 사용자에게 노출 시킨 후 3분초과시 페이지 새로고침)
+
+
+    2. 고객이 입력한 인증코드와 전송된 인증 코드 비교
+
+    주소 : POST http://localhost:8888/signup/check/code
+
+    데이터 : body(raw-json) {
+
+                    "token" : "(front사이드에서 갖고있던 토큰값)", => console.log로 확인된 token 값
+                    "digit_code" : 1234
+                }
+    
+    프로세스 1. front사이드에서 확인 버튼누르면 갖고잇던 token값과,입력한 인증코드 전송
+           2. token 풀어서 안에 담긴 정보 확인
+           3. token 안에들어있던 인증코드와 고객이 입력한 인증코드 비교
+           4. 3번에서의 비교한 두값이 같을 시 front 사이드에 담겨있던 고객 전화번호 전송
+           (front 사이드에서는 전송받은 고객전화번호를 가지고 회원가입 뷰페이지로 이동시켜준다. 고객의 전화번호는 Inpunt 태그(readonly)로 노출시켜서 전화번호 변경이 불가하게한다. )
+
+    
+    3. 이메일 중복체크 
+    
+    주소 : POST http://localhost:8888/check/email
+
+    데이터 예시 : body(raw-json) {
+
+                    "email" : "test@test.com"
+                }
+
+    프로세스 1. front사이드에서 전송해준 고객 이메일의 가입이력확인 (가입이력있을 시 400코드,메세지 전송)
+           2. 가입이력 없을시 200코드 , 메세지 전송            
+
+
+    4. 회원가입 
+
+    주소 : POST http://localhost:8888/signup
+
+
+    데이터 예시 : body(raw-json) {
+
+                    "email" : "test@test.com",
+                    "nickname" : "ittttori01",
+                    "password" : "gkqrurrldnjs22",
+                    "name" : "kim",
+                    "phpne_number" : "1290393894"
+                }
+        
+    프로세스 1. front사이드에서 전송받은 정보 확인 
+           2. uuid 생성
+           3. 고객이 입력한 비밀번호 암호화,salt값 구하기
+           4. database에 저장
+           5. 저장완료시 200코드와 함께 성공메세지 전달          
+
+
+    5. 로그인 
+
+    주소 : POST http://localhost:8888/login 
+
+    데이터 예시 : body(raw-json) {
+
+                "email" : "test@test.com",
+                "password" : "gkqrurrldnjs22"
+ 
+            }
+         
+    프로세스 1. front사이드에서 전송받은 정보 확인 
+           2. database에 고객이 입력한 이메일 주소로 가입한 회원이 있는지 확인 후 각각의 상태 전송
+               => 가입된 이메일주소가 있을 시 입력한 비밀번호와 저장된 비밀번호가 맞는지 확인
+               => 이메일주소존재, 비밀번호 일치 시 200코드와 프론트에서 사용할 고객정보 전송 (프론트사이드에서는 항상 고객정보를 갖고잇는다)
+
+
+    4. 회원정보 조회 페이지 (mypage)
