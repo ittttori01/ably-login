@@ -70,7 +70,8 @@ exports.sendCode = () => {
                 if (err) throw err;
 
                 let sendInfo = {
-                    email : userInfo.phone_number,
+                    id : userInfo.id,
+                    email : userInfo.email,
                     newToken : token
                 };
                 
@@ -199,10 +200,10 @@ exports.checkDigitCode = (req,res) => {
     //폰넘버만 넘겨서 프론트에 박제
 
     const send_info = (decoded) => {
-
+        //id,이메일주소 넘겨서 앞에서 수정할 수 있게 해준다.
         const promiseFunc = (resolve,reject) => {
 
-            res.sendStatus(200).json({id : decoded.phone_number });
+            res.sendStatus(200).json({userInfo : decoded});
 
         }
 
@@ -234,7 +235,8 @@ exports.setNewPassword = () => {
 
             let userInfo = {
                 
-                phone_number : req.body.phone_number,
+                id : req.body.member_id,
+                email : req.body.email,
                 new_password : req.body.new_password
             };
 
@@ -274,7 +276,7 @@ exports.setNewPassword = () => {
         const promiseFunc = (resolve,reject) => {
 
             db.get('member')
-            .find({phone_number:userInfo.phone_number})
+            .find({id:userInfo.id})
             .assign({password : userInfo.password, salt : userInfo.salt})
             .write()
             .then(()=>{
@@ -288,5 +290,16 @@ exports.setNewPassword = () => {
     };
 
     
+    const reset  = async() => {
+
+        try {
+            
+        } catch (error) {
+            
+        }
+        
+    }
+
+    reset();
     
 }

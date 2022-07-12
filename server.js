@@ -1,8 +1,10 @@
 const express = require('express');
+const config = require('./config.json');
 const app = express();
-const port = 8888;
+const port = config.port;
 const bodyParser = require('body-parser');
 
+// db 디폴트값설정 
 // const low = require('lowdb');
 // const FileSync = require('lowdb/adapters/FileSync');
 // const adapter = new FileSync('db.json');

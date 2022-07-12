@@ -1,4 +1,5 @@
 {
     "jwtSecretKey" : "a$4594$7dkfjx*EDm1",
-    "serverUrl" : "http://localhost:8888"
+    "serverUrl" : "http://localhost:8888",
+    "port" : 8888
 }

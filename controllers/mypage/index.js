@@ -6,7 +6,7 @@ exports.getUserInfo = (req,res) => {
 
         const promiseFunc = (resolve,reject) => {
 
-            let member_id = req.params.member_id;
+            let member_id = req.body.member_id;
    
             resolve(member_id);
         }
