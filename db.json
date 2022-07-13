@@ -11,6 +11,17 @@
       "uuid": "",
       "name": "",
       "phone_number": ""
+    },
+    {
+      "id": "AflB-v4Gh",
+      "email": "eeee@gmail.com",
+      "nickname": "tori",
+      "password": "sWECPwRWdA9+wuq7i6nK0J2mrsxxG3ceAPj/EA3V0Ekxc1eAnyQaqnw2FnZSmBl5f3Qv/mdgviwn62Hmr0T5rA==",
+      "salt": "fjqsqw/VJE1sxQ3tgv6106R/o6N6JSzdbpUcOPjsyYq8KDUmSV5tfu0wBNgWHgD2xHbpNOEbIqrGjDEn1ag9cQ==",
+      "uuid": "9cc17486-fd6e-42ef-bae2-f535781882dd",
+      "name": "kim",
+      "phone_number": "0101010234",
+      "createdAt": "2022-07-13"
     }
   ]
 }
