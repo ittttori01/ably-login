@@ -3,6 +3,9 @@
 ** 실행방법 ** 
 폴더 다운로드 후 npm install 명령어로 모듈 설치 후 server.js파일 실행.
 
+** API 설명 **
+- 해당 API는 FRONT 서버와 BACKEND 서버가 다르게 존재 할 것이라고 가정하고 설계 되었습니다. 
+
 ** 회원가입 db 데이터 예시 **
   "member": [
     {
@@ -18,16 +21,16 @@
     }
   ]
 
-* 컨트롤러
 📦controllers
- ┣ 📂forgotPassword
- ┃ ┗ 📜settingPassword.js => 비밀번호 재설정
  ┣ 📂login
- ┃ ┗ 📜login.js => 로그인기능
+ ┃ ┗ 📜login.js
  ┣ 📂mypage
- ┃ ┗ 📜index.js => 로그인 한 회원 정보 조회
+ ┃ ┗ 📜index.js
+ ┣ 📂resetPassword
+ ┃ ┗ 📜resetPassword.js
  ┗ 📂signup
- ┃ ┗ 📜signUp.js => 회원가입 기능
+ ┃ ┗ 📜signUp.js
+
 
 *  ROUTE 명세
     1. 회원가입 시 휴대폰 번호 인증을 위한 인증번호 전송
@@ -45,8 +48,10 @@
            2. 회원가입이 되어있는 번호인지확인 (가입이력 있을 시 프론트로 400코드,메세지 전송)
            3. front사이드로 보낼 jwt 토큰설정(설정된 인증번호, 입력받은 전화번호) => 테스트의경우 인증코드는 1234
            4. 테스트용이 아닐경우 sms api 
-           5. sms api 전송 후 / 테스트의 경우 3번과정이 끝난 후 front사이드로 토큰값전송
+           5. sms api 전송 후 / 테스트의 경우 3번과정이 끝난 후 front 사이드로 토큰값전송
            (프론트 사이드에서는 인증번호 입력시간 3분을 사용자에게 노출 시킨 후 3분초과시 페이지 새로고침)
+
+           FRONT SIDE로 보내는 최종데이터 :token (phone_number,digitcode의 정보가 포함)
 
 
     2. 고객이 입력한 인증코드와 전송된 인증 코드 비교
@@ -65,6 +70,8 @@
            4. 3번에서의 비교한 두값이 같을 시 front 사이드에 담겨있던 고객 전화번호 전송
            (front 사이드에서는 전송받은 고객전화번호를 가지고 회원가입 뷰페이지로 이동시켜준다. 고객의 전화번호는 Inpunt 태그(readonly)로 노출시켜서 전화번호 변경이 불가하게한다. )
 
+           FRONT SIDE로 보내는 최종데이터 : 사용자가 입력한 phone_number
+
     
     3. 이메일 중복체크 
     
@@ -76,7 +83,7 @@
                 }
 
     프로세스 1. front사이드에서 전송해준 고객 이메일의 가입이력확인 (가입이력있을 시 400코드,메세지 전송)
-           2. 가입이력 없을시 200코드 , 메세지 전송            
+           2. 가입이력 없을시 200코드 , 메세지 전송 후 가입 진행 가능하게 한다.           
 
 
     4. 회원가입 
@@ -90,7 +97,7 @@
                     "nickname" : "ittttori01",
                     "password" : "gkqrurrldnjs22",
                     "name" : "kim",
-                    "phpne_number" : "1290393894"
+                    "phone_number" : "1290393894"
                 }
         
     프로세스 1. front사이드에서 전송받은 정보 확인 
@@ -114,22 +121,77 @@
     프로세스 1. front사이드에서 전송받은 정보 확인 
            2. database에 고객이 입력한 이메일 주소로 가입한 회원이 있는지 확인 후 각각의 상태 전송
                => 가입된 이메일주소가 있을 시 입력한 비밀번호와 저장된 비밀번호가 맞는지 확인
-               => 이메일주소존재, 비밀번호 일치 시 200코드와 프론트에서 사용할 고객정보 전송 (프론트사이드에서는 항상 고객정보를 갖고 있는다)
+               => 이메일주소존재, 비밀번호 일치 시 200코드와 프론트에서 사용할 고객 정보 전송 
+
+     FRONT SIDE로 보내는 최종데이터 : database member에 있는 로그인 한 사용자의 정보 모두 
 
 
-    4. 회원정보 조회 페이지 (mypage)
+    6. 회원정보 조회 페이지 (mypage)
 
-        데이터 예시 : body(raw-json) {
+    주소 : POST http://localhost:8888/mypage 
 
-            "member_id" : "7KImw0L3H",
+    데이터 예시 : body(raw-json) {
 
+        "member_id" : "7KImw0L3H",
+
+    }
+
+    //front-side에서는 회원이 로그인 상태에서만 mypage 버튼노출
+    프로세스 1. mypage버튼 누르면 front사이드에서 가지고있던 회원정보중 id 값을 전송
+            2. member_id 값으로 database에서 회원정보 조회 
+            3. 200코드와 함께 회원정보 front사이드로 전송
+        
+
+    7. 비밀번호 재설정을 위한 인증코드 전송 페이지
+
+    주소 : POST http://localhost:8888/reset/send/code
+
+    데이터 예시 : body(raw-json) {
+
+            "phone_number" : "1290393894",
+            "is_test" : true (test가아닐경우 false)
         }
 
-        //front-side에서는 회원이 로그인 상태에서만 mypage 버튼노출
-        프로세스 1. mypage버튼 누르면 front사이드에서 가지고있던 회원정보중 id 값을 전송
-               2. member_id 값으로 database에서 회원정보 조회 
-               3. 200코드와 함께 회원정보 front사이드로 전송
-          
+    프로세스 1. 사용자는 비밀번호 재설정을 위해 가입시 인증받앗던 휴대폰번호를 입력한다. 
+           2. 사용자가 입력한 휴대폰 번호가 database에 존재 하는지 확인한다. 
+           3. 사용자가 입력한 휴대폰 번호가 database에 존재시 사용자가 가입한 이메일주소와 전송할 코드를 토큰에 담아서 jwt 토큰을 생성한다.
+           4. is_test가 false일경우 (실사용일 경우) sms api에 생성한 코드 전송 
+            5. sms api 전송 후 / 테스트의 경우 3번과정이 끝난 후 front 사이드로 토큰값전송
+           (프론트 사이드에서는 인증번호 입력시간 3분을 사용자에게 노출 시킨 후 3분초과시 페이지 새로고침)
+
+    FRONT SIDE로 보내는 최종데이터 :token (member_id,email주소,digitcode의 정보가 포함)
+
+    8.비밀번호 재설정하기 위해서 고객이 입력한 인증코드와 전송된 인증 코드 비교
+    주소 : POST http://localhost:8888/reset/check/code
+
+    데이터 : body(raw-json) {
+
+                    "token" : "(front사이드에서 갖고있던 토큰값)",
+                    "digit_code" : 1234
+                }
+    
+    프로세스 1. front사이드에서 확인 버튼누르면 갖고잇던 token값과,입력한 인증코드 전송
+           2. token 풀어서 안에 담긴 정보 확인
+           3. token 안에들어있던 인증코드와 고객이 입력한 인증코드 비교
+           4. 3번에서의 비교한 두값이 같을 시 front 사이드에 토큰값으로 담앗던 정보 전송
+           (front 사이드에서는 전송받은 고객정보(id,email)를가지고 비밀번호 재설정 페이지로 이동시켜준다.고객의 이메일주소 Inpunt 태그(readonly)로 노출시켜서 가입한 이메일주소를 사용자에게 알려준다. )
+
+           FRONT SIDE로 보내는 최종데이터 : 사용자가 입력한 이메일 , database member id값
+
+    9. 비밀번호 재설정
+    
+    주소 : PUT http://localhost:8888/reset/pwd      
+    
+    데이터 : body(raw-json) {
+
+                "id" : "AflB-v4Gh",
+                "password" : "skdjfieTdd&"
+            }
+
+    프로세스 1.front side에서 갖고있던 고객의 정보중 id, 사용자가 입력한 새로운 비밀번호를 전송한다. 
+           2. 변경할 비밀번호를 암호화 , salt생성한다.
+           3. 사용자의 정보를 database에서 업데이트한다.
+           4. 성공시 201코드와 함께 성공 메세지 전달
 
 ** 아쉬운점 **
 1. file data base 기반의 모듈을 처음사용 해 보아서 비동기적으로 다루는 법을 구현하지 못했다.

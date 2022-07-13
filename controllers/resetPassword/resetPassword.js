@@ -55,6 +55,7 @@ exports.sendCode = (req,res) => {
 
             let insertInfo = {
                 email : userInfo.email,
+                id : userInfo.id,
                 code : userInfo.is_test == true ? 1234 : create4DigitCode()
             };
 
@@ -73,10 +74,12 @@ exports.sendCode = (req,res) => {
                 let sendInfo = {
                     id : userInfo.id,
                     email : userInfo.email,
-                    newToken : token
+                    newToken : token,
+                    code : insertInfo.code
+           
                 };
-                
-                resolve(sendInfo);   
+              
+                resolve(sendInfo,insertInfo.code);   
             });
 
         }
@@ -85,13 +88,13 @@ exports.sendCode = (req,res) => {
     }
 
 
-    const sendSms = (sendInfo) => {
+    const sendSms = (code) => {
 
         const promiseFunc = (resolve,reject) => {
-            
-                    
+
+
             axios.post('api/send',()=>{
-        
+                //code값 담아서 전송
             })
             .then((res)=>{
 
@@ -110,7 +113,7 @@ exports.sendCode = (req,res) => {
     }
 
     const send_result = (sendInfo) => {
-
+        console.log(sendInfo)
         let token = sendInfo.newToken;
 
         const promiseFunc = (resolve,reject) => {
@@ -123,16 +126,16 @@ exports.sendCode = (req,res) => {
     }
 
 
-    const sendCodeFn = async () => {
+    const sendCodeFn = async() => {
 
         try {
             const entered_info = await info();
             const user_info = await checkUser(entered_info);
-            const send_info = await makeToken(user_info);
+            const {send_info,code} = await makeToken(user_info);
             if(!entered_info.is_test){
-                await sendSms(user_info);
+                await sendSms(code);
             }
-            await send_result(send_info);
+            await send_result(send_info,code);
 
         } catch (err) {
             console.log(err);
@@ -159,8 +162,10 @@ exports.checkDigitCode = (req,res) => {
     
     
     const verifyToken = (token) => {
-        
-        let secretKey = config.secretKey;
+
+        const _jwt =require('jsonwebtoken');
+
+        let secretKey = _config.jwtSecretKey;
 
         const promiseFunc = (resolve,reject) => {
 
@@ -170,6 +175,7 @@ exports.checkDigitCode = (req,res) => {
     
                     if(err){
                     
+                        console.log(err);
                         res.status(500).json({message : 'err caught In verify Token function'});
     
                     }else{
@@ -288,7 +294,7 @@ exports.setNewPassword = (req,res) => {
 
             if(result) {
 
-                res.status(200).json({message : "비밀번호가 재 설정되었습니다."});
+                res.status(201).json({message : "비밀번호가 재설정되었습니다."});
             }else{
 
                 res.status(500).json({message : 'err caught In reset Password function'});
