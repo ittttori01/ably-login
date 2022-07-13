@@ -1,6 +1,5 @@
 const db = require('../../db');
 const _config = require('../../config.json');
-const { decode } = require('punycode');
 
 exports.sendCode = (req,res) => {
 
