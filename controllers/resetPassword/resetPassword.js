@@ -1,5 +1,6 @@
 const db = require('../../db');
 const _config = require('../../config.json');
+const { decode } = require('punycode');
 
 exports.sendCode = (req,res) => {
 
@@ -33,8 +34,9 @@ exports.sendCode = (req,res) => {
             let userInfo = db.get('member').find({phone_number:phone_number}).value();
 
             if (userInfo) {
+                console.log(enteredInfo)
 
-                resolve(userInfo);
+                resolve(userInfo,enteredInfo);
 
             }else {
 
@@ -45,7 +47,7 @@ exports.sendCode = (req,res) => {
         return new Promise(promiseFunc);
     }
 
-    const makeToken = (userInfo) => {
+    const makeToken = (userInfo,enteredInfo) => {
 
         const _jwt = require('jsonwebtoken');
 
@@ -56,7 +58,7 @@ exports.sendCode = (req,res) => {
             let insertInfo = {
                 email : userInfo.email,
                 id : userInfo.id,
-                code : userInfo.is_test == true ? 1234 : create4DigitCode()
+                code : enteredInfo.is_test == true ? 1234 : create4DigitCode()
             };
 
             let options = {
@@ -71,6 +73,7 @@ exports.sendCode = (req,res) => {
                 
                 if (err) throw err;
 
+                //프론트로 보낼 정보
                 let sendInfo = {
                     id : userInfo.id,
                     email : userInfo.email,
@@ -79,7 +82,7 @@ exports.sendCode = (req,res) => {
            
                 };
               
-                resolve(sendInfo,insertInfo.code);   
+                resolve(sendInfo);   
             });
 
         }
@@ -88,13 +91,13 @@ exports.sendCode = (req,res) => {
     }
 
 
-    const sendSms = (code) => {
+    const sendSms = (sendInfo) => {
 
         const promiseFunc = (resolve,reject) => {
 
 
             axios.post('api/send',()=>{
-                //code값 담아서 전송
+                //code값 담아서 전송(sendInfo.code)
             })
             .then((res)=>{
 
@@ -113,7 +116,7 @@ exports.sendCode = (req,res) => {
     }
 
     const send_result = (sendInfo) => {
-        console.log(sendInfo)
+
         let token = sendInfo.newToken;
 
         const promiseFunc = (resolve,reject) => {
@@ -131,11 +134,11 @@ exports.sendCode = (req,res) => {
         try {
             const entered_info = await info();
             const user_info = await checkUser(entered_info);
-            const {send_info,code} = await makeToken(user_info);
+            const send_info = await makeToken(user_info,entered_info);
             if(!entered_info.is_test){
-                await sendSms(code);
+                await sendSms(send_info);
             }
-            await send_result(send_info,code);
+            await send_result(send_info);
 
         } catch (err) {
             console.log(err);
@@ -174,8 +177,7 @@ exports.checkDigitCode = (req,res) => {
                 function(err,decoded){
     
                     if(err){
-                    
-                        console.log(err);
+
                         res.status(500).json({message : 'err caught In verify Token function'});
     
                     }else{
@@ -212,7 +214,11 @@ exports.checkDigitCode = (req,res) => {
         //frontside에 이메일주소 노출, id값은 비밀번호 수정할때 같이 보내준다.
         const promiseFunc = (resolve,reject) => {
 
-            res.sendStatus(200).json({userInfo : decoded});
+            let sendInfo = {
+                email : decoded.email,
+                id : decoded.id
+            }
+            res.status(200).json({userInfo : sendInfo});
 
         }
 
