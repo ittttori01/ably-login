@@ -136,6 +136,8 @@
 
     }
 
+    *** front-side에서 로그인 세션 유지를 위해서 jwt을 이용한다고 했을때 로그인 성공 시 jwt 발급해주는 펑션 추가가능 ****
+
     //front-side에서는 회원이 로그인 상태에서만 mypage 버튼노출
     프로세스 1. mypage버튼 누르면 front사이드에서 가지고있던 회원정보중 id 값을 전송
             2. member_id 값으로 database에서 회원정보 조회 
