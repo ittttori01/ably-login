@@ -4,7 +4,7 @@ const app = express();
 const port = config.port;
 const bodyParser = require('body-parser');
 
-// db 디폴트값설정 
+
 // const low = require('lowdb');
 // const FileSync = require('lowdb/adapters/FileSync');
 // const adapter = new FileSync('db.json');
@@ -24,6 +24,7 @@ const bodyParser = require('body-parser');
 
 // db.get('member').remove({id:"NFTViQnyn"}).write();
 // db.get('member').remove();
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

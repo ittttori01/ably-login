@@ -28,19 +28,18 @@ exports.sendCode = () => {
 
         const promiseFunc = (resolve,reject) => {
 
-            db.get('memebr')
-            .find({phone_number : userInfo.phone_number})
-            .value()
-            .then((rows) => {
-                if(rows){
+            let phone_number = userInfo.phone_number;
 
-                    resolve(userInfo);
+            let user = db.get('member').find({phone_number:phone_number}).value();
 
-                }else {
+            if (user) {
 
-                    res.status(400).json({message : "가입이력이 없는 전화번호입니다.다시 확인 해 주세요"});
-                }
-            });
+                resolve(userInfo);
+
+            }else {
+
+                res.status(400).json({ message: "일치하는 회원 정보가 없습니다. " });
+            }
         }
 
         return new Promise(promiseFunc);
@@ -93,7 +92,6 @@ exports.sendCode = () => {
         
             })
             .then((res)=>{
-                //성공응답시
 
                 resolve(sendInfo);
 
@@ -115,8 +113,7 @@ exports.sendCode = () => {
 
         const promiseFunc = (resolve,reject) => {
             
-            //프론트에 인증번호 입력 후 확인버튼에 위의 url 주소넣어주기 //3분이지나면 비활성화시킨다.
-            res.status(200).json({token : token});
+            res.status(200).json({token : token, message : "인증코드가 전송되었습니다."});
     
         }
 
@@ -129,6 +126,11 @@ exports.sendCode = () => {
         try {
             const user_info = await info();
             await checkUser(user_info);
+            await makeToken(user_info);
+            if(user_info.is_test){
+                await sendSms(user_info);
+            }
+            await send_result(user_info);
 
         } catch (err) {
             console.log(err);
@@ -236,7 +238,6 @@ exports.setNewPassword = () => {
             let userInfo = {
                 
                 id : req.body.member_id,
-                email : req.body.email,
                 new_password : req.body.new_password
             };
 
@@ -262,7 +263,7 @@ exports.setNewPassword = () => {
 
                     userInfo.password = password;
                     
-                    resolve();
+                    resolve(userInfo);
                 });
             });
         }
@@ -271,18 +272,23 @@ exports.setNewPassword = () => {
     };
 
 
-    const updateUser = () => {
+    const updateUser = (userInfo) => {
 
         const promiseFunc = (resolve,reject) => {
 
-            db.get('member')
+            let result = db.get('member')
             .find({id:userInfo.id})
             .assign({password : userInfo.password, salt : userInfo.salt})
-            .write()
-            .then(()=>{
+            .write();
 
-                res.sendStatus(200).json({message:"비밀번호 변경이 완료되었습니다.다시 로그인 해 주세요"});
-            })
+            if(result) {
+
+                res.status(200).json({message : "비밀번호가 재 설정되었습니다."});
+            }else{
+
+                res.status(500).json({message : 'err caught In reset Password function'});
+            }
+
         }
 
         return new Promise(promiseFunc);
@@ -293,9 +299,13 @@ exports.setNewPassword = () => {
     const reset  = async() => {
 
         try {
+            const user_info = await info();
+            await createPassword(user_info);
+            await updateUser(user_info);
+            await updateUser(user_info);
+        } catch (err) {
             
-        } catch (error) {
-            
+            console.log(err);
         }
         
     }
