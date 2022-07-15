@@ -4,7 +4,7 @@
 폴더 다운로드 후 npm install 명령어로 모듈 설치 후 server.js파일 실행.
 
 ** API 설명 **
-- 해당 API는 FRONT 서버와 BACKEND 서버가 다르게 존재 할 것이라고 가정하고 설계 되었습니다. 
+- 해당 API는 FRONT 서버와 BACKEND 서버가 따로 구동 될 것이라고 가정하고 설계 되었습니다. 
 
 ** 회원가입 db 데이터 예시 **
   "member": [
